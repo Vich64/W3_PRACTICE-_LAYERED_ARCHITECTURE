@@ -1,53 +1,76 @@
+import 'package:uuid/uuid.dart';
+
 class Question{
+  final String id;
   final String title;
   final List<String> choices;
   final String goodChoice;
-  final int score;
+  final int point;
 
-  Question({required this.title, required this.choices, required this.goodChoice, required this.score});
+  Question({String? id, required this.title, required this.choices, required this.goodChoice, required this.point}) : id = id ?? const Uuid().v4();
 }
-
-class Answer{
-  final Question question;
+class Answer {
+  final String id;
+  final String questionId;
   final String answerChoice;
 
+  Answer({String? id, required this.questionId, required this.answerChoice}) : id = id ?? const Uuid().v4();
 
-  Answer({required this.question, required this.answerChoice});
-
-  bool isGood(){
-    return this.answerChoice == question.goodChoice;
+  bool isGood(Question question) {
+    return answerChoice == question.goodChoice;
   }
+
 }
 
-class Quiz{
-  List<Question> questions;
-  List <Answer> answers =[];
+class Quiz {
+  final String id;
+  final List<Question> questions;
+  final List<Answer> answers;
 
-  Quiz({required this.questions});
-  
-  int get score => score;
+  Quiz({String? id, required this.questions, List<Answer>? answers,}) : id = id ?? const Uuid().v4(), answers = answers ?? [];
 
-  void addAnswer(Answer asnwer) {
-     this.answers.add(asnwer);
-  }
-int getScoreInPercentage(){
-    int totalSCore = 0;
-    for(Answer answer in answers){
-      if (answer.isGood()) {
-        totalSCore ++;
-      }
+  // Getters for ID
+  Question? getQuestionById(String id) {
+    try {
+      return questions.firstWhere((q) => q.id == id);
+    } catch (e) {
+      print('Quesion not found');
     }
-    return ((totalSCore / answers.length) * 100).toInt();
-
+    return null;
   }
 
-  int getScoreInTotal(){
-    int totalSCore = 0;
-    for(Answer answer in answers){
-      if (answer.isGood()) {
-        totalSCore += answer.question.score;
+  Answer? getAnswerById(String id) {
+    try {
+      return answers.firstWhere((a) => a.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void addAnswer(Answer answer) {
+    answers.add(answer);
+  }
+
+  int getScoreInPercentage() {
+    if (answers.isEmpty) return 0;
+    int totalScore = 0;
+    for (Answer answer in answers) {
+      final question = getQuestionById(answer.questionId);
+      if (question != null && answer.isGood(question)) {
+        totalScore++;
       }
     }
-    return (totalSCore).toInt();
+    return ((totalScore / answers.length) * 100).toInt();
+  }
+
+  int getScoreInTotal() {
+    int totalScore = 0;
+    for (Answer answer in answers) {
+      final question = getQuestionById(answer.questionId);
+      if (question != null && answer.isGood(question)) {
+        totalScore += question.point;
+      }
+    }
+    return totalScore;
   }
 }

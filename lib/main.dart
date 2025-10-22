@@ -1,24 +1,30 @@
- 
-import 'domain/quiz.dart';
+import 'data/quiz_file_provider.dart';
 import 'ui/quiz_console.dart';
 
 void main() {
+  // Initialize QuizRepository with JSON file path
+  QuizRepository repo = QuizRepository('quiz.json');
 
-  List<Question> questions = [
-    Question(
-        title: "Capital of France?",
-        choices: ["Paris", "London", "Rome"],
-        goodChoice: "Paris",
-        score: 10),
-    Question(
-        title: "2 + 2 = ?", 
-        choices: ["2", "4", "5"], 
-        goodChoice: "4",
-        score: 50),
-  ];
+  // Load quiz from JSON
+  try {
+    var quiz = repo.readQuizWithIds();
+    print('Loaded quiz from JSON with ID: ${quiz.id}');
+    print('Number of questions: ${quiz.questions.length}');
+    print('Questions:');
+    for (var question in quiz.questions) {
+      print('- ${question.title} (ID: ${question.id})');
+    }
+    print('Number of existing answers: ${quiz.answers.length}');
 
-  Quiz quiz = Quiz(questions: questions);
-  QuizConsole console = QuizConsole(quiz: quiz);
+    // Run the quiz
+    QuizConsole console = QuizConsole(quiz: quiz);
+    console.startQuiz();
 
-  console.startQuiz();
+    // Save the quiz state
+    repo.saveQuiz(quiz);
+    print('Quiz saved to data/quiz.json');
+  } catch (e) {
+    print('Error loading or running quiz: $e');
+    print('Please ensure data/quiz.json exists and is correctly formatted.');
+  }
 }
