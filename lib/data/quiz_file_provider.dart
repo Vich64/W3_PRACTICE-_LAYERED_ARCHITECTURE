@@ -17,6 +17,7 @@ class QuizRepository {
     var questionsJson = data['questions'] as List;
     var questions = questionsJson.map((q) {
       return Question(
+        id: q['id'] ?? const Uuid().v4(),
         title: q['title'],
         choices: List<String>.from(q['choices']),
         goodChoice: q['goodChoice'],
@@ -24,7 +25,9 @@ class QuizRepository {
       );
     }).toList();
 
-    return Quiz(questions: questions);
+    return Quiz(
+      id: data['id'] ?? const Uuid().v4(),
+      questions: questions);
   }
 
   Quiz readQuizWithIds() {
